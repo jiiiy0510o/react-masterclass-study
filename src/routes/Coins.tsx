@@ -12,6 +12,9 @@ const Header = styled.header`
 `;
 
 const CoinList = styled.ul`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 0px 20px;
 `;
 
@@ -24,13 +27,23 @@ const Coin = styled.li`
   border-radius: 12px;
   font-weight: 900;
   a {
+    display: flex;
+    align-items: center;
     transition: color 0.3s ease-in-out;
-    display: block;
   }
   &:hover {
     a {
       color: ${(props) => props.theme.accentColor};
     }
+  }
+  @media screen and (max-width: 600px) {
+    width: 80%;
+  }
+  @media screen and (min-width: 601px) and (max-width: 900px) {
+    width: 70%;
+  }
+  @media screen and (min-width: 901px) {
+    width: 60%;
   }
 `;
 
@@ -49,6 +62,12 @@ const Loader = styled.span`
   font-size: 26px;
   font-weight: 900;
   letter-spacing: 3px;
+`;
+
+const Img = styled.img`
+  width: 25px;
+  height: 25px;
+  margin-right: 8px;
 `;
 interface ICoin {
   id: string;
@@ -82,7 +101,10 @@ function Coins() {
         <CoinList>
           {coins.map((coin) => (
             <Coin key={coin.id}>
-              <Link to={`/${coin.id}`}>{coin.name} &rarr;</Link>
+              <Link to={{ pathname: `/${coin.id}`, state: { name: coin.name } }}>
+                <Img src={`https://cryptocurrencyliveprices.com/img/${coin.id}.png`} />
+                {coin.name} &rarr;
+              </Link>
             </Coin>
           ))}
         </CoinList>
