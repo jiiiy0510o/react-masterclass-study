@@ -1,40 +1,78 @@
 import styled from "styled-components";
-import { motion, useMotionValue, useTransform, useViewportScroll } from "framer-motion";
-import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 const Wrapper = styled(motion.div)`
   width: 100vw;
-  height: 200vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   background: linear-gradient(135deg, rgb(238, 0, 153), rgb(189, 0, 255));
 `;
+
 const Box = styled(motion.div)`
-  width: 200px;
+  width: 400px;
   height: 200px;
-  background-color: rgba(255, 255, 255, 1);
-  border-radius: 40px;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.06);
+  position: absolute;
+  top: 100px;
+  background-color: white;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
 `;
 
-function App() {
-  const x = useMotionValue(0);
-  const rotateZ = useTransform(x, [-800, 800], [-360, 360]);
-  const gradient = useTransform(
-    x,
-    [-800, 800],
-    [
-      "linear-gradient(135deg, rgb(84, 67, 238), rgb(22, 61, 146))",
-      "linear-gradient(135deg, rgb(255, 208, 0), rgb(255, 242, 157))",
-    ]
-  );
-  const { scrollYProgress } = useViewportScroll();
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 5]);
+const box = {
+  entry: (back: boolean) => ({
+    x: back ? -500 : 500,
+    opacity: 0,
+    scale: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+    },
+  },
+  exit: (back: boolean) => ({
+    x: back ? 500 : -500,
+    opacity: 0,
+    scale: 0,
+    transition: {
+      duration: 0.6,
+    },
+  }),
+};
 
+function App() {
+  const [visible, setVisible] = useState(1);
+  const [back, setBack] = useState(false);
+  const nextBtn = () => {
+    setBack(false);
+    setVisible((prev) => (prev === 10 ? 10 : prev + 1));
+  };
+  const prevBtn = () => {
+    setBack(true);
+    setVisible((prev) => (prev === 1 ? 1 : prev - 1));
+  };
   return (
-    <Wrapper style={{ background: gradient }}>
-      <Box style={{ x, rotateZ, scale }} drag="x" dragSnapToOrigin />
+    <Wrapper>
+      <AnimatePresence custom={back}>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) =>
+          i === visible ? (
+            <Box custom={back} variants={box} initial="entry" animate="center" exit="exit" key={visible}>
+              {visible}
+            </Box>
+          ) : null
+        )}
+      </AnimatePresence>
+      <button onClick={prevBtn}>Prev</button>
+      <button onClick={nextBtn}>Next</button>
     </Wrapper>
   );
 }
