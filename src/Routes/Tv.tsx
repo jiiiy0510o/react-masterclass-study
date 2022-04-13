@@ -1,5 +1,5 @@
 function Tv() {
-  return <div style={{ background: "lightpink", height: "200vh" }}>TV</div>;
+  return <div style={{ height: "200vh" }}>TV</div>;
 }
 
 export default Tv;
