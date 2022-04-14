@@ -51,7 +51,7 @@ const Row = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
-  margin: 10px 0;
+  margin: 10px 4%;
   width: 92%;
 `;
 const Box = styled(motion.div)<{ bgPhoto: string }>`
