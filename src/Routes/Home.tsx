@@ -1,13 +1,16 @@
 import { useQuery } from "react-query";
 import styled from "styled-components";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useViewportScroll } from "framer-motion";
 import { getMovies, IGetMoviesResult } from "../api";
 import { makeImagePath } from "./utilities";
 import { useState } from "react";
+import { useHistory, useRouteMatch } from "react-router-dom";
 
 const Wrapper = styled.div`
   background-color: black;
   height: 200vh;
+  display: flex;
+  flex-direction: column;
 `;
 const Loader = styled.div`
   height: 20vh;
@@ -38,13 +41,18 @@ const Slider = styled.div`
   position: relative;
   top: -150px;
 `;
+const SlideTitle = styled.span`
+  font-size: 18px;
+  font-weight: 500;
+  padding: 0px 20px;
+`;
 const Row = styled(motion.div)`
   position: absolute;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
-  margin: 0 1%;
-  width: 98%;
+  margin: 10px 0;
+  width: 92%;
 `;
 const Box = styled(motion.div)<{ bgPhoto: string }>`
   background-color: white;
@@ -53,6 +61,7 @@ const Box = styled(motion.div)<{ bgPhoto: string }>`
   background-position: center top;
   border-radius: 3px;
   height: 200px;
+  cursor: pointer;
   &:first-child {
     transform-origin: center left;
   }
@@ -72,6 +81,51 @@ const Info = styled(motion.div)`
     text-align: center;
     font-size: 12px;
   }
+`;
+const Overlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+`;
+const BigMoive = styled(motion.div)`
+  position: absolute;
+  width: 42vw;
+  height: 60vh;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  border-radius: 3px;
+  background-color: ${(props) => props.theme.black.lighter};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const BigCover = styled.div`
+  width: 42%;
+  background-repeat: no-repeat;
+  background-position: left top;
+  height: 450px;
+`;
+const BigDetail = styled.div`
+  position: relative;
+  width: 42%;
+  height: 100%;
+  color: ${(props) => props.theme.white.lighter};
+`;
+const BigTitle = styled.h2`
+  position: absolute;
+  top: 70px;
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 600;
+`;
+const BigOverview = styled.p`
+  position: absolute;
+  top: 160px;
 `;
 
 const rowVariants = {
@@ -112,9 +166,15 @@ const infoVariants = {
 const offset = 6;
 
 function Home() {
+  const bigMovieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId");
+  const history = useHistory();
   const { data, isLoading } = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies);
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
+  const { scrollY } = useViewportScroll();
+  const onOverlayClick = () => {
+    history.push("/");
+  };
   const increaseIndex = () => {
     if (data) {
       if (leaving) return;
@@ -125,6 +185,12 @@ function Home() {
     }
   };
   const toggleLeaving = () => setLeaving((prev) => !prev);
+  const onBoxClicked = (movieId: number) => {
+    history.push(`/movies/${movieId}`);
+  };
+  const clickedMovie =
+    bigMovieMatch?.params.movieId && data?.results.find((movie) => movie.id + "" === bigMovieMatch.params.movieId);
+
   return (
     <Wrapper>
       {isLoading ? (
@@ -136,6 +202,7 @@ function Home() {
             <Overview>{data?.results[0].overview}</Overview>
           </Banner>
           <Slider>
+            <SlideTitle>최근 등록 콘텐츠 </SlideTitle>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
@@ -150,6 +217,8 @@ function Home() {
                   .slice(offset * index, offset * index + offset)
                   .map((movie) => (
                     <Box
+                      layoutId={movie.id + ""}
+                      onClick={() => onBoxClicked(movie.id)}
                       variants={BoxVariants}
                       whileHover="hover"
                       initial="normal"
@@ -165,6 +234,29 @@ function Home() {
               </Row>
             </AnimatePresence>
           </Slider>
+
+          <AnimatePresence>
+            {bigMovieMatch ? (
+              <>
+                <Overlay onClick={onOverlayClick} exit={{ opacity: 0 }} animate={{ opacity: 1 }}></Overlay>
+                <BigMoive style={{ top: scrollY.get() + 90 }} layoutId={bigMovieMatch.params.movieId}>
+                  {clickedMovie && (
+                    <>
+                      <BigCover
+                        style={{
+                          backgroundImage: `url(${makeImagePath(clickedMovie.poster_path, "w300")})`,
+                        }}
+                      />
+                      <BigDetail>
+                        <BigTitle>{clickedMovie.title}</BigTitle>
+                        <BigOverview>{clickedMovie.overview}</BigOverview>
+                      </BigDetail>
+                    </>
+                  )}
+                </BigMoive>
+              </>
+            ) : null}
+          </AnimatePresence>
         </>
       )}
     </Wrapper>

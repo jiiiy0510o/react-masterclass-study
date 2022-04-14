@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
-@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300&display=swap');
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -61,10 +61,11 @@ table {
 }
 body {
   font-weight: 300;
-  font-family: 'Nanum Gothic Coding', monospace;
+  font-family: 'Noto Sans KR', sans-serif;
   line-height: 1.2;
   color: ${(props) => props.theme.white.darker};
   background-color: black;
+  overflow-x: hidden;
 }
 a {
   text-decoration:none;
